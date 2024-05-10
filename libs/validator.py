@@ -1,4 +1,5 @@
 import os
+import threading
 from time import sleep
 from selenium import webdriver
 from dotenv import load_dotenv
@@ -11,6 +12,8 @@ load_dotenv()
 EXCEL_PATH = os.getenv("EXCEL_PATH")
 SHEET_NAME = os.getenv("SHEET_NAME")
 
+is_running = True
+
 
 class Validator():
     
@@ -19,6 +22,7 @@ class Validator():
         self.browser = None
         self.xlsx = None
         self.dataframe = None
+        self.lock = threading.Lock()
         
         self.__start_browser__()
         self.__load_excel_data__()
@@ -58,15 +62,24 @@ class Validator():
     def __loop_facebook_posts__(self):
         """ Loop each register from excel data
         """
-        
-        print("Validating comments...")
+                
+        print("Validating comments")
         comments_found = 0
         comments_not_found = 0
-        for index, row in tqdm(self.dataframe.iterrows(), total=len(self.dataframe)):
+        for index, row in self.dataframe.iterrows():
+                        
+            # End thread loop
+            global lock
+            with lock:
+                if not is_running:
+                    print("Stopped")
+                    break
+            
             comment = row["TEXTO A ANALIZAR"]
             link = row["URL"]
             odio = row["ODIO"]
             text_type = row["TIPO DE MENSAJE"]
+            print(f"Validating comment {index + 1}/{len(self.dataframe)}")
             
             if odio == "no odio":
                 continue
@@ -130,3 +143,29 @@ class Validator():
             return "si"
         else:
             return "no"
+        
+    def __end_thread__(self):
+        """ End thread
+        """
+        
+        global is_running
+        global lock
+        lock = threading.Lock()
+        
+        while True:
+            option = input("Press 'q' to stop: \n")
+            if option == "q":
+                with lock:
+                    is_running = False
+                    print("Stopping...")
+                    break
+        
+    def autorun(self):
+        
+        # Lock and thread
+        thread = threading.Thread(
+            target=self.__loop_facebook_posts__,
+        )
+        thread.start()
+        self.__end_thread__()
+        thread.join()
