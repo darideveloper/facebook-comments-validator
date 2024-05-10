@@ -4,7 +4,6 @@ from time import sleep
 from selenium import webdriver
 from dotenv import load_dotenv
 from selenium.webdriver.common.by import By
-from tqdm import tqdm
 import pandas as pd
 
 
