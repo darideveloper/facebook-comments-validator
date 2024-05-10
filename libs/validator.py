@@ -101,7 +101,9 @@ class Validator():
             self.dataframe.at[index, "Comentario encontrado"] = found_text
             
         # Save excel
+        print("Saving excel file...")
         self.dataframe.to_excel(EXCEL_PATH, index=False, sheet_name=SHEET_NAME)
+        print("Excel file saved")
     
     def __validate_comment__(self, comment: str, link: str) -> str:
         """ Check if comment is in the post
@@ -168,7 +170,7 @@ class Validator():
                     print("Stopping...")
                     print(f"Comments found: {self.comments_found}")
                     print(f"Comments not found: {self.comments_not_found}")
-                    print(f"No comments: {self.invalid_comments}")
+                    print(f"No comments: {self.no_comments}")
                     self.browser.quit()
                     
                     break
