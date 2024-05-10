@@ -27,6 +27,10 @@ class Validator():
         self.__start_browser__()
         self.__load_excel_data__()
         
+        self.comments_found = 0
+        self.comments_not_found = 0
+        self.no_comments = 0
+        
     def __refresh__(self):
         """ Refresh browser with tabs """
         
@@ -64,8 +68,6 @@ class Validator():
         """
                 
         print("Validating comments")
-        comments_found = 0
-        comments_not_found = 0
         for index, row in self.dataframe.iterrows():
                         
             # End thread loop
@@ -88,17 +90,18 @@ class Validator():
                 comment_short = comment if len(comment) < 50 else comment[:50] + "..."
                 found_text = self.__validate_comment__(comment_short, link)
                 if found_text == "si":
-                    comments_found += 1
+                    self.comments_found += 1
                 else:
-                    comments_not_found += 1
+                    self.comments_not_found += 1
             else:
                 found_text = "no es comentario"
+                self.no_comments += 1
                
             # Update cell value
             self.dataframe.at[index, "Comentario encontrado"] = found_text
             
-            # Save excel
-            self.dataframe.to_excel(EXCEL_PATH, index=False, sheet_name=SHEET_NAME)
+        # Save excel
+        self.dataframe.to_excel(EXCEL_PATH, index=False, sheet_name=SHEET_NAME)
     
     def __validate_comment__(self, comment: str, link: str) -> str:
         """ Check if comment is in the post
@@ -123,6 +126,7 @@ class Validator():
         try:
             # Load page
             self.browser.get(link)
+            self.__refresh__()
             
             # Close facebook login
             self.browser.find_element(By.CSS_SELECTOR, selectors["close"]).click()
@@ -156,8 +160,17 @@ class Validator():
             option = input("Press 'q' to stop: \n")
             if option == "q":
                 with lock:
+                    
+                    # Change running status
                     is_running = False
+                    
+                    # Show counters
                     print("Stopping...")
+                    print(f"Comments found: {self.comments_found}")
+                    print(f"Comments not found: {self.comments_not_found}")
+                    print(f"No comments: {self.invalid_comments}")
+                    self.browser.quit()
+                    
                     break
         
     def autorun(self):
