@@ -166,10 +166,10 @@ class Validator():
                     is_running = False
                     
                     # Show counters
-                    print("Stopping...")
                     print(f"Comments found: {self.comments_found}")
                     print(f"Comments not found: {self.comments_not_found}")
                     print(f"No comments: {self.no_comments}")
+                    print("Stopping...")
                     
                     break
         
