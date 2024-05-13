@@ -33,7 +33,6 @@ class Validator():
     def __refresh__(self):
         """ Refresh browser with tabs """
         
-        # Refresh selenium
         self.browser.execute_script("window.open('');")
         windows = self.browser.window_handles
         self.browser.switch_to.window(windows[len(windows) - 1])
@@ -41,6 +40,14 @@ class Validator():
         self.browser.close()
         self.browser.switch_to.window(windows[0])
         sleep(1.5)
+        
+    def __move_new_tab__(self):
+        """ Create and move to new tab, and delete the last one """
+        
+        self.browser.execute_script("window.open('');")
+        self.browser.close()
+        windows = self.browser.window_handles
+        self.browser.switch_to.window(windows[0])
                 
     def __start_browser__(self):
         """ Start and setup firefox browser
@@ -126,6 +133,7 @@ class Validator():
         
         try:
             # Load page
+            self.__move_new_tab__()
             self.browser.get(link)
             self.__refresh__()
             
