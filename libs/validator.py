@@ -53,9 +53,13 @@ class Validator():
         """ Start and setup firefox browser
         """
         
+        # Private window option
+        options = webdriver.FirefoxOptions()
+        options.add_argument("--private-window")
+        
         # Instance browser
         print("Opening browser...")
-        self.browser = webdriver.Firefox()
+        self.browser = webdriver.Firefox(options=options)
     
     def __load_excel_data__(self):
         """ Load and filter excel data
@@ -142,7 +146,6 @@ class Validator():
             self.__refresh__()
         except Exception:
             return "error al cargar la página"
-        self.__refresh__()
         
         # Get page comments
         comments = self.browser.find_elements(By.CSS_SELECTOR, selectors["comments"])
