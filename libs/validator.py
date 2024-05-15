@@ -148,14 +148,20 @@ class Validator():
             return "error al cargar la página"
         
         # Get page comments
+        clean_chars = ["\n", "\t", "\r", ",", ".", "..."]
         comments = self.browser.find_elements(By.CSS_SELECTOR, selectors["comments"])
         comments_texts = [comment.text for comment in comments]
-        comments_texts = [
-            text.lower().strip().replace(",", "") for text in comments_texts
-        ]
+        comments_texts_clean = []
+        for comment_text in comments_texts:
+            for char in clean_chars:
+                comment_text = comment_text.replace(char, "")
+
+                # remove emojis
+                comment_text = comment_text.encode('ascii', 'ignore').decode('ascii')
+                comments_texts_clean.append(comment_text)
         
         # Validate comment in the page
-        if comment in comments_texts:
+        if comment in comments_texts_clean:
             return "si"
         else:
             return "no"
