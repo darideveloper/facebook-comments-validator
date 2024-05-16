@@ -97,8 +97,7 @@ class Validator():
                 continue
             
             if text_type == "Comment":
-                comment_short = comment if len(comment) < 50 else comment[:50] + "..."
-                found_text = self.__validate_comment__(comment_short, link)
+                found_text = self.__validate_comment__(comment, link)
                 if found_text == "si":
                     self.comments_found += 1
                 else:
@@ -131,8 +130,7 @@ class Validator():
         selectors = {
             "close": '.bg-s8 > div:nth-child(2) > div:nth-child(1) > '
                      'div:nth-child(1) > div:nth-child(2)',
-            "comments": '.displayed > div:nth-child(n+5)[data-comp-id] '
-                        '[style="color:#000000;"]',
+            "comments": '[data-timeout="30"] [style="color:#000000;"]',
         }
         
         try:
@@ -148,19 +146,41 @@ class Validator():
             return "error al cargar la página"
         
         # Get page comments
-        clean_chars = ["\n", "\t", "\r", ",", ".", "..."]
+        clean_chars = [
+            "\n",
+            "\t",
+            "\r",
+            ",",
+            ".",
+            "...",
+            "?",
+            "!",
+            "¡",
+            "¿",
+            "(",
+            ")",
+            ":",
+            ";",
+            '"',
+            "'",
+            " ",
+        ]
         comments = self.browser.find_elements(By.CSS_SELECTOR, selectors["comments"])
         comments_texts = [comment.text for comment in comments]
         comments_texts_clean = []
         for comment_text in comments_texts:
+            
+            # Remove extra chars
             for char in clean_chars:
                 comment_text = comment_text.replace(char, "")
 
-                # remove emojis
-                comment_text = comment_text.encode('ascii', 'ignore').decode('ascii')
-                comments_texts_clean.append(comment_text)
+            # remove emojis
+            comment_text = comment_text.encode('ascii', 'ignore').decode('ascii')
+            
+            comments_texts_clean.append(comment_text.lower().strip())
         
         # Validate comment in the page
+        comment = comment.replace(" ", "")
         if comment in comments_texts_clean:
             return "si"
         else:
